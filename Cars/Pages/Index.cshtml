@@ -1,0 +1,118 @@
+﻿@page
+@model Cars.Pages.IndexModel
+@{
+	ViewData["Title"] = "Login or Register";
+	Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<div class="container">
+	<div class="row justify-content-center mt-5">
+		<div class="col-md-6">
+			<div class="card">
+				<div class="card-body">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true">Login</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab" aria-controls="register" aria-selected="false">Register</button>
+						</li>
+					</ul>
+					<div class="tab-content mt-4" id="myTabContent">
+						<!-- Login Tab -->
+						<div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
+							<form id="loginForm" method="post" asp-page-handler="Login">
+								<!-- Login Form Fields -->
+								<div class="form-group">
+									<label asp-for="login.Username"></label>
+									<input asp-for="login.Username" class="form-control" id="Username" />
+									<span asp-validation-for="login.Username" class="text-danger"></span>
+								</div>
+
+								<div class="form-group">
+									<label asp-for="login.Password"></label>
+									<input asp-for="login.Password" class="form-control" type="password" id="Password" />
+									<span asp-validation-for="login.Password" class="text-danger"></span>
+								</div>
+								<button type="submit" class="btn btn-primary">Login</button>
+							</form>
+						</div>
+						<!-- Register Tab -->
+						<div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
+							<form >
+								<div class="form-group">
+									<label asp-for="User.UserName"></label>
+									<input asp-for="User.UserName" class="form-control" />
+									<span asp-validation-for="User.UserName" class="text-danger"></span>
+								</div>
+
+								<div class="form-group">
+									<label asp-for="User.Email"></label>
+									<input asp-for="User.Email" type="email" class="form-control" />
+									<span asp-validation-for="User.Email" class="text-danger"></span>
+								</div>
+
+								<div class="form-group">
+									<label asp-for="User.PasswordHash"></label>
+									<input asp-for="User.PasswordHash" type="password" class="form-control" />
+									<span asp-validation-for="User.PasswordHash" class="text-danger"></span>
+								</div>
+								<div class="form-group">
+									<label asp-for="User.PhoneNumber"></label>
+									<input asp-for="User.PhoneNumber" type="text" class="form-control" />
+									<span asp-validation-for="User.PhoneNumber" class="text-danger"></span>
+								</div>
+								<div class="form-group">
+									<label asp-for="User.FirstName"></label>
+									<input asp-for="User.FirstName" type="text" class="form-control" />
+									<span asp-validation-for="User.FirstName" class="text-danger"></span>
+								</div>
+								<div class="form-group">
+									<label asp-for="User.LastName"></label>
+									<input asp-for="User.LastName" type="text" class="form-control" />
+									<span asp-validation-for="User.LastName" class="text-danger"></span>
+								</div>
+								<button type="submit" class="btn btn-primary">Register</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	$(document).ready(function () {
+		$('#loginForm').submit(function (event) {
+			event.preventDefault(); // Prevent default form submission
+
+			// Create a JSON object with form data
+			var formData = {
+				Username: $('#Username').val(),
+				Password: $('#Password').val()
+			};
+
+			// AJAX call to login API
+			$.ajax({
+				url: '/api/Login',
+				method: 'POST',
+				data: JSON.stringify(formData), // Convert data to JSON string
+				contentType: 'application/json', // Set content type to JSON
+				success: function (response) {
+					var token = response.value.token; // Assuming the token is at response.value.token
+					localStorage.setItem('token', token);
+					window.location.href = '/car';
+
+				},
+				
+				error: function (xhr, status, error) {
+					// Handle error response
+					var errorMessage = xhr.responseText;
+					console.error('Login failed: ' + errorMessage);
+				}
+			});
+		});
+	});
+
+</script>
+

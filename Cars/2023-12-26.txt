@@ -1,0 +1,12 @@
+2023-12-26 07:26:43,430 [14] INFO  App  
+ This is an information log message. 
+ 
+2023-12-26 07:37:54,663 [17] ERROR App  
+ An error occurred while saving the entity changes. See the inner exception for details. 
+ 
+2023-12-26 07:47:49,630 [18] ERROR App  
+ An error occurred while saving the entity changes. See the inner exception for details. 
+ 
+2023-12-26 07:48:38,435 [24] INFO  App  
+ This is an information log message. 
+ 
