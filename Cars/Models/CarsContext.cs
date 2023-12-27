@@ -29,7 +29,7 @@ namespace Cars.Models
                     .WithMany(p => p.Cars)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Cars__UserId__4CA06362");
+                    .HasConstraintName("FK_Cars_Users");
             });
 
             OnModelCreatingPartial(modelBuilder);

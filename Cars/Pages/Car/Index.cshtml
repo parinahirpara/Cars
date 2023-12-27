@@ -6,96 +6,24 @@
 
 <h1>Cars</h1>
 
-<p>
+<div class="d-flex justify-content-between">
     <a class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCarModal">Add Car</a>
-</p>
+    <input type="text" id="searchInput" class="ms-auto" placeholder="Search by brand or model" onkeyup="Search(this)">
+</div>
+<div id="carTableContainer">
 
-<table id="carsTable"></table>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Brand</th>
-            <th>Model</th>
-            <th>Year</th>
-            <th>Price</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var car in Model.Cars)
-        {
-            <tr>
-                <td>@car.Brand</td>
-                <td>@car.Model</td>
-                <td>@car.Year</td>
-                <td>@car.Price</td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editCarModal_@car.Id">Edit</button>
-                        <form asp-page-handler="Delete" asp-route-id="@car.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this car?');">
-                            <button class="btn btn-danger">Delete</button>
-                        </form>
-                    </div>
-                   
-                </td>
-            </tr>
-
-            <div class="modal fade" id="editCarModal_@car.Id" tabindex="-1" aria-labelledby="editCarModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <form method="post" asp-page-handler="EditCar">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="editCarModalLabel">Edit Car</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <input type="hidden" name="Id" value="@car.Id">
-                                <div class="mb-3">
-                                    <label for="brandInput_@car.Id" class="form-label">Brand:</label>
-                                    <input type="text" class="form-control" id="brandInput_@car.Id" name="Brand" value="@car.Brand" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="modelInput_@car.Id" class="form-label">Model:</label>
-                                    <input type="text" class="form-control" id="modelInput_@car.Id" name="Model" value="@car.Model" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="yearInput_@car.Id" class="form-label">Year:</label>
-                                    <input type="number" class="form-control" id="yearInput_@car.Id" name="Year" value="@car.Year" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="priceInput_@car.Id" class="form-label">Price:</label>
-                                    <input type="number" step="0.01" class="form-control" id="priceInput_@car.Id" name="Price" value="@car.Price" required>
-                                </div>
-                                <div class="mb-3 form-check">
-                                    <input type="checkbox" class="form-check-input" id="newInput_@car.Id" name="New" @if (car.New)
-                                    {
-                                        <text>checked</text>
-                                    }>
-                                    <label class="form-check-label" for="newInput_@car.Id">New</label>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-primary">Save Changes</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        }
-    </tbody>
-</table>
+</div>
 
 <div class="modal fade" id="addCarModal" tabindex="-1" aria-labelledby="addCarModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="post" asp-page-handler="AddCar">
+            <form id="submitAddCarForm">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addCarModalLabel">Add New Car</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <input type="hidden" id="UserId" name="UserId"/>
                     <div class="mb-3">
                         <label for="brandInput" class="form-label">Brand:</label>
                         <input type="text" class="form-control" id="brandInput" name="Brand" required>
@@ -113,72 +41,282 @@
                         <input type="number" step="0.01" class="form-control" id="priceInput" name="Price" required>
                     </div>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="newInput" name="New">
+                        <input type="hidden" name="New" value="false"> <!-- Hidden field with value 'false' -->
+                        <input type="checkbox" class="form-check-input" id="newInput" name="New" value="true" onchange="handleCheckboxChange(this)">
                         <label class="form-check-label" for="newInput">New</label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary">Add Car</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+<!-- Bootstrap Modal for editing car details -->
+<div class="modal fade" id="editCarModal" tabindex="-1" aria-labelledby="editCarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="submitEditCarForm">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCarModalLabel">Edit Car</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+               
+                    <input type="hidden" id="UserId1" name="UserId" />
+                    <input type="hidden" id="carIdInput1" name="Id">
+                    <div class="mb-3">
+                        <label for="brandInput1" class="form-label">Brand:</label>
+                        <input type="text" class="form-control" id="brandInput1" name="Brand" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modelInput1" class="form-label">Model:</label>
+                        <input type="text" class="form-control" id="modelInput1" name="Model" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="yearInput1" class="form-label">Year:</label>
+                        <input type="number" class="form-control" id="yearInput1" name="Year" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="priceInput1" class="form-label">Price:</label>
+                        <input type="number" step="0.01" class="form-control" id="priceInput1" name="Price" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="hidden" name="New" value="false"> <!-- Hidden field with value 'false' -->
+                        <input type="checkbox" class="form-check-input" id="newInput1" name="New"  onchange="handleCheckboxChange(this)">
+                        <label class="form-check-label" for="newInput">New</label>
+                    </div>
+                  
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+             </form>
+        </div>
+    </div>
+</div>
+
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script>
-        // $(document).ready(function () {
-        //     var tableConfig = {
-        //         order: [[1, 'asc']],
-        //         "dom": '<"top"lf>rt<"bottom"ip><"clear">',
-        //         serverSide: true,
-        //         processing: true,
-        //         responsive: true,
-        //         searching: true,
-        //         ordering: true,
-        //         select: false,
-        //         sortable: true,
-        //         destroy: true,
-        //         aaSorting: [],
-        //         ajax: {
-        //             url: '@Url.Action("CarDatatableResult", "Cars")',
-        //             method: 'Post',
-        //             contentType: "multipart/form-data",
-        //             dataSrc: function (jsonData) {
-        //                 return ResolveJsonReferences(jsonData);
-        //             },
-        //             data: function (d) {
+        function handleCheckboxChange(checkbox) {
+            var hiddenInput = checkbox.parentNode.querySelector('input[type="hidden"][name="New"]');
+            hiddenInput.value = checkbox.checked ? "true" : "false";
+        }
+        $(document).ready(function () {
+            
+            var token = localStorage.getItem('token');
+            $.ajax({
+                url: '/api/user/current', 
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token 
+                },
+                success: function (response) {
+                    var userId = response.userId;
+                    $("#UserId").val(userId);
+                    $.ajax({
+                        url: '/api/Cars/ByUserId/' + userId, 
+                        method: 'GET',
+                        success: function (carsResponse) {
+                            
+                            var cars = carsResponse;
 
-        //             }
+                            if (cars.length === 0) {
+                            
+                                $('#carTableContainer').html('<p>No cars found for this user.</p>');
+                            } else {
+                                
+                                var tableHtml = '<table  class="table"><thead><tr><th>Brand</th><th>Model</th><th>Year</th><th>Price</th><th>Actions</th></tr></thead><tbody>';
 
-        //         },
-        //         columns: [
-        //             { data: 'brand', title: 'Brand' },
-        //             { data: 'model', title: 'Model' },
-        //             { data: 'year', title: 'Year' },
-        //             { data: 'new', title: 'New' }
-        //             // Add columns configurations for other fields
-        //         ],
-        //         lengthMenu: [[5, 10, 20, 50, 400, -1], [5, 10, 20, 50, 400, "All"]],
-        //         pageLength: 5,
-        //         columnDefs: [{
-        //             "defaultContent": "-",
-        //             "targets": "_all"
-        //         }],
+                               
+                                for (var i = 0; i < cars.length; i++) {
+                                    for (var i = 0; i < cars.length; i++) {
+                                        tableHtml += '<tr>';
+                                        tableHtml += '<td>' + cars[i].brand + '</td>';
+                                        tableHtml += '<td>' + cars[i].model + '</td>';
+                                        tableHtml += '<td>' + cars[i].year + '</td>';
+                                        tableHtml += '<td>' + cars[i].price + '</td>';
+                                        tableHtml += '<td>';
+                                        tableHtml += '<div class="d-flex align-items-center">';
+                                        tableHtml += '<button class="btn btn-primary me-2" onclick="editCar(' + cars[i].id + ')">Edit</button>';
+                                        tableHtml += '<button class="btn btn-danger" onclick="deleteCar(' + cars[i].id + ')">Delete</button>';
+                                       
+                                        tableHtml += '</div>';
+                                        tableHtml += '</td>';
+                                        tableHtml += '</tr>';
+                                    }
+                                }
 
-        //     };
-        //     $.fn.dataTable.ext.errMode = 'none';
-        //     dynamicTable = $('#carsTable').on('error.dt', function (e, settings, techNote, message) {
-        //     }).DataTable(tableConfig);
-        //     $('#carsTable').wrap('<div class="table-responsive">');
-        //     $(".table-responsive").css("position", "relative");
+                                tableHtml += '</tbody></table>';
+                                $('#carTableContainer').html(tableHtml);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            if (xhr.status === 404) {
+                                $('#carTableContainer').html('Resource not found.');
+                            } else {
+                                console.log('Error fetching car:', error);
+                            }
+                        }
+                    });
+                },
+                error: function (xhr, status, error) {
+                    
+                    console.log('Error:', error);
+                }
+            });
+            $('#submitAddCarForm').on('submit', function (e) {
+                debugger;
+                e.preventDefault(); 
 
-           
-           
-        // });
+                var formData = {
+                    Brand: $('#brandInput').val(),
+                    Model: $('#modelInput').val(),
+                    Year: $('#yearInput').val(),
+                    Price: $('#priceInput').val(),
+                    New: $('#newInput').prop('checked'), 
+                    UserId: $('#UserId').val() 
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/api/Cars', 
+                    data: JSON.stringify(formData),
+                    contentType: 'application/json',
+                    success: function (data) {
+                        window.location.href = '/car';
+                    },
+                    error: function (error) {
+                        
+                        console.error('Error adding car:', error);
+                    }
+               });
+           });
+            $('#submitEditCarForm').on('submit', function (e) {
+                debugger;
+                e.preventDefault(); 
+                var formData = {
+                    UserId: $('#UserId1').val(),
+                    Id: $('#carIdInput1').val(),
+                    Brand: $('#brandInput1').val(),
+                    Model: $('#modelInput1').val(),
+                    Year: $('#yearInput1').val(),
+                    Price: $('#priceInput1').val(),
+                    New: $('#newInput1').prop('checked') ,
+                    UserId: $('#UserId').val() 
+                };
+
+                $.ajax({
+                    url: '/api/Cars/' + formData.Id,
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                       window.location.href = '/car';
+                       
+                    },
+                    error: function (xhr, textStatus, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            });
+        
+        })
+        function editCar(id) {
+            $.ajax({
+                url: `/api/Cars/${id}`,
+                method: 'GET',
+                success: function (response) {
+                    var car = response; 
+                    console.log(car);
+
+                    $('#carIdInput1').val(car.id);
+                    $('#brandInput1').val(car.brand);
+                    $('#modelInput1').val(car.model);
+                    $('#yearInput1').val(car.year);
+                    $('#priceInput1').val(car.price);
+                    var isNew = car.new;
+                    $('#newInput1').prop('checked', isNew);
+                    $('#editCarModal').modal('show'); 
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error fetching car details:', error);
+                }
+            });
+        }
+        function deleteCar(id) {
+            $.ajax({
+                url: `/api/Cars/${id}`,
+                method: 'DELETE',
+                success: function (response) {
+                    window.location.href = '/car';
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error deleting car:', error);
+                }
+            });
+        }
+        function Search(ele){
+            var userId=$("#UserId").val();
+
+            var keyword = $(ele).val();
+            var searchData = {
+                UserId: userId,
+                Keyword: keyword
+            };
+
+            $.ajax({
+                url: '/api/Cars/Search',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(searchData),
+                success: function (carsResponse) {
+                    var cars = carsResponse;
+
+                    if (cars.length === 0) {
+
+                        $('#carTableContainer').html('<p>No cars found for this user.</p>');
+                    } else {
+
+                        var tableHtml = '<table  class="table"><thead><tr><th>Brand</th><th>Model</th><th>Year</th><th>Price</th><th>Actions</th></tr></thead><tbody>';
+
+
+                        for (var i = 0; i < cars.length; i++) {
+                            for (var i = 0; i < cars.length; i++) {
+                                tableHtml += '<tr>';
+                                tableHtml += '<td>' + cars[i].brand + '</td>';
+                                tableHtml += '<td>' + cars[i].model + '</td>';
+                                tableHtml += '<td>' + cars[i].year + '</td>';
+                                tableHtml += '<td>' + cars[i].price + '</td>';
+                                tableHtml += '<td>';
+                                tableHtml += '<div class="d-flex align-items-center">';
+                                tableHtml += '<button class="btn btn-primary me-2" onclick="editCar(' + cars[i].id + ')">Edit</button>';
+                                tableHtml += '<button class="btn btn-danger" onclick="deleteCar(' + cars[i].id + ')">Delete</button>';
+
+                                tableHtml += '</div>';
+                                tableHtml += '</td>';
+                                tableHtml += '</tr>';
+                            }
+                        }
+
+                        tableHtml += '</tbody></table>';
+                        $('#carTableContainer').html(tableHtml);
+                    }
+                },
+                error: function (xhr) {
+                    if (xhr.status === 404) {
+                        $('#carTableContainer').html('Resource not found.');
+                    } else {
+                        console.log('Error:', xhr);  
+                    }
+                }
+            });
+        
+        }
     </script>
 }
 

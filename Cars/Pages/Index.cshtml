@@ -19,9 +19,8 @@
 						</li>
 					</ul>
 					<div class="tab-content mt-4" id="myTabContent">
-						<!-- Login Tab -->
 						<div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
-							<form id="loginForm" method="post" asp-page-handler="Login">
+							<form id="loginForm">
 								<!-- Login Form Fields -->
 								<div class="form-group">
 									<label asp-for="login.Username"></label>
@@ -37,9 +36,8 @@
 								<button type="submit" class="btn btn-primary">Login</button>
 							</form>
 						</div>
-						<!-- Register Tab -->
 						<div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
-							<form >
+							<form method="post" asp-page-handler="Register">
 								<div class="form-group">
 									<label asp-for="User.UserName"></label>
 									<input asp-for="User.UserName" class="form-control" />
@@ -84,29 +82,26 @@
 <script>
 	$(document).ready(function () {
 		$('#loginForm').submit(function (event) {
-			event.preventDefault(); // Prevent default form submission
+			event.preventDefault(); 
 
-			// Create a JSON object with form data
 			var formData = {
 				Username: $('#Username').val(),
 				Password: $('#Password').val()
 			};
-
-			// AJAX call to login API
 			$.ajax({
 				url: '/api/Login',
 				method: 'POST',
-				data: JSON.stringify(formData), // Convert data to JSON string
-				contentType: 'application/json', // Set content type to JSON
+				data: JSON.stringify(formData),
+				contentType: 'application/json', 
 				success: function (response) {
-					var token = response.value.token; // Assuming the token is at response.value.token
+					var token = response.value.token; 
 					localStorage.setItem('token', token);
 					window.location.href = '/car';
 
 				},
 				
 				error: function (xhr, status, error) {
-					// Handle error response
+
 					var errorMessage = xhr.responseText;
 					console.error('Login failed: ' + errorMessage);
 				}
