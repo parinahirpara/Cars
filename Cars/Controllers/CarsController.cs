@@ -21,22 +21,6 @@ namespace Cars.Controllers
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
-        [HttpGet]
-        public async Task<IActionResult> GetCars()
-        {
-            try
-            {
-                _logger.Info("This is an information log message.");
-                var cars = _unitOfWork.GetRepository<Car>().GetAll().Result;
-                return Ok(cars);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex.Message);
-                throw;
-            }
-
-        }
         [HttpGet("ByUserId/{userId}")]
         public async Task<IActionResult> GetCarsByUserId(int userId)
         {
@@ -58,33 +42,6 @@ namespace Cars.Controllers
             }
         }
 
-        [HttpPost("CarDatatableResult")]
-        public async Task<IActionResult> CarDatatableResult([FromForm] MyDataTablesRequest request)
-        {
-            try
-            {
-                
-                var queryableData = _unitOfWork.GetRepository<Car>().GetAll(); // Get your IQueryable<Car> data here
-
-               
-
-                var data = queryableData.Result.ToList(); // Get the paged and filtered data
-
-                
-                return Ok(new
-                {
-                    draw = request.Draw,
-                    recordsTotal = data.Count, 
-                    recordsFiltered = data.Count, 
-                    data = data 
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex.Message);
-                return StatusCode(500, "An error occurred while fetching data.");
-            }
-        }
         [HttpPost("Search")]
         public async Task<IActionResult> SearchCarsByUserAndKeyword([FromBody] SearchRequest request)
         {
