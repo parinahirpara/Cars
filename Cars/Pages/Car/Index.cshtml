@@ -106,99 +106,109 @@
             var hiddenInput = checkbox.parentNode.querySelector('input[type="hidden"][name="New"]');
             hiddenInput.value = checkbox.checked ? "true" : "false";
         }
+        function Logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        }
         $(document).ready(function () {
-            
+           
             var token = localStorage.getItem('token');
-            $.ajax({
-                url: '/api/user/current', 
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + token 
-                },
-                success: function (response) {
-                    var userId = response.userId;
-                    $("#UserId").val(userId);
-                    $.ajax({
-                        url: '/api/Cars/ByUserId/' + userId, 
-                        method: 'GET',
-                        success: function (carsResponse) {
-                            
-                            var cars = carsResponse;
+            if (token == null) {
+                window.location.href = '/';
+            }
+            else {
+                var logoutListItem = $('<li class="nav-item"><a href="javascript:void(0)" class="nav-link" onclick=Logout()>Logout</a></li>');
+                $('.navbar-nav.flex-grow-1').append(logoutListItem);
+                $.ajax({
+                    url: '/api/user/current',
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    success: function (response) {
+                        var userId = response.userId;
+                        $("#UserId").val(userId);
+                        $.ajax({
+                            url: '/api/Cars/ByUserId/' + userId,
+                            method: 'GET',
+                            success: function (carsResponse) {
 
-                            if (cars.length === 0) {
-                            
-                                $('#carTableContainer').html('<p>No cars found for this user.</p>');
-                            } else {
-                                
-                                var tableHtml = '<table  class="table"><thead><tr><th>Brand</th><th>Model</th><th>Year</th><th>Price</th><th>Actions</th></tr></thead><tbody>';
+                                var cars = carsResponse;
 
-                               
-                                for (var i = 0; i < cars.length; i++) {
+                                if (cars.length === 0) {
+
+                                    $('#carTableContainer').html('<p>No cars found for this user.</p>');
+                                } else {
+
+                                    var tableHtml = '<table  class="table"><thead><tr><th>Brand</th><th>Model</th><th>Year</th><th>Price</th><th>Actions</th></tr></thead><tbody>';
+
+
                                     for (var i = 0; i < cars.length; i++) {
-                                        tableHtml += '<tr>';
-                                        tableHtml += '<td>' + cars[i].brand + '</td>';
-                                        tableHtml += '<td>' + cars[i].model + '</td>';
-                                        tableHtml += '<td>' + cars[i].year + '</td>';
-                                        tableHtml += '<td>' + cars[i].price + '</td>';
-                                        tableHtml += '<td>';
-                                        tableHtml += '<div class="d-flex align-items-center">';
-                                        tableHtml += '<button class="btn btn-primary me-2" onclick="editCar(' + cars[i].id + ')">Edit</button>';
-                                        tableHtml += '<button class="btn btn-danger" onclick="deleteCar(' + cars[i].id + ')">Delete</button>';
-                                       
-                                        tableHtml += '</div>';
-                                        tableHtml += '</td>';
-                                        tableHtml += '</tr>';
-                                    }
-                                }
+                                        for (var i = 0; i < cars.length; i++) {
+                                            tableHtml += '<tr>';
+                                            tableHtml += '<td>' + cars[i].brand + '</td>';
+                                            tableHtml += '<td>' + cars[i].model + '</td>';
+                                            tableHtml += '<td>' + cars[i].year + '</td>';
+                                            tableHtml += '<td>' + cars[i].price + '</td>';
+                                            tableHtml += '<td>';
+                                            tableHtml += '<div class="d-flex align-items-center">';
+                                            tableHtml += '<button class="btn btn-primary me-2" onclick="editCar(' + cars[i].id + ')">Edit</button>';
+                                            tableHtml += '<button class="btn btn-danger" onclick="deleteCar(' + cars[i].id + ')">Delete</button>';
 
-                                tableHtml += '</tbody></table>';
-                                $('#carTableContainer').html(tableHtml);
+                                            tableHtml += '</div>';
+                                            tableHtml += '</td>';
+                                            tableHtml += '</tr>';
+                                        }
+                                    }
+
+                                    tableHtml += '</tbody></table>';
+                                    $('#carTableContainer').html(tableHtml);
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                if (xhr.status === 404) {
+                                    $('#carTableContainer').html('Resource not found.');
+                                } else {
+                                    console.log('Error fetching car:', error);
+                                }
                             }
-                        },
-                        error: function (xhr, status, error) {
-                            if (xhr.status === 404) {
-                                $('#carTableContainer').html('Resource not found.');
-                            } else {
-                                console.log('Error fetching car:', error);
-                            }
-                        }
-                    });
-                },
-                error: function (xhr, status, error) {
-                    
-                    console.log('Error:', error);
-                }
-            });
+                        });
+                    },
+                    error: function (xhr, status, error) {
+
+                        console.log('Error:', error);
+                    }
+                });
+            }
             $('#submitAddCarForm').on('submit', function (e) {
-                debugger;
-                e.preventDefault(); 
+                e.preventDefault();
 
                 var formData = {
                     Brand: $('#brandInput').val(),
                     Model: $('#modelInput').val(),
                     Year: $('#yearInput').val(),
                     Price: $('#priceInput').val(),
-                    New: $('#newInput').prop('checked'), 
-                    UserId: $('#UserId').val() 
+                    New: $('#newInput').prop('checked'),
+                    UserId: $('#UserId').val()
                 };
 
                 $.ajax({
                     type: 'POST',
-                    url: '/api/Cars', 
+                    url: '/api/Cars',
                     data: JSON.stringify(formData),
                     contentType: 'application/json',
                     success: function (data) {
                         window.location.href = '/car';
                     },
                     error: function (error) {
-                        
-                        console.error('Error adding car:', error);
+
+                        console.log('Error adding car:', error);
                     }
-               });
-           });
+                });
+            });
             $('#submitEditCarForm').on('submit', function (e) {
                 debugger;
-                e.preventDefault(); 
+                e.preventDefault();
                 var formData = {
                     UserId: $('#UserId1').val(),
                     Id: $('#carIdInput1').val(),
@@ -206,8 +216,8 @@
                     Model: $('#modelInput1').val(),
                     Year: $('#yearInput1').val(),
                     Price: $('#priceInput1').val(),
-                    New: $('#newInput1').prop('checked') ,
-                    UserId: $('#UserId').val() 
+                    New: $('#newInput1').prop('checked'),
+                    UserId: $('#UserId').val()
                 };
 
                 $.ajax({
@@ -216,14 +226,23 @@
                     contentType: 'application/json',
                     data: JSON.stringify(formData),
                     success: function (response) {
-                       window.location.href = '/car';
-                       
+                        window.location.href = '/car';
+
                     },
                     error: function (xhr, textStatus, error) {
-                        console.error('Error:', error);
+                        console.log('Error:', error);
                     }
                 });
-            });
+            })
+
+
+
+
+
+
+
+
+                ;
         
         })
         function editCar(id) {
@@ -244,7 +263,7 @@
                     $('#editCarModal').modal('show'); 
                 },
                 error: function (xhr, status, error) {
-                    console.error('Error fetching car details:', error);
+                    console.log('Error fetching car details:', error);
                 }
             });
         }
@@ -256,7 +275,7 @@
                     window.location.href = '/car';
                 },
                 error: function (xhr, status, error) {
-                    console.error('Error deleting car:', error);
+                    console.log('Error deleting car:', error);
                 }
             });
         }

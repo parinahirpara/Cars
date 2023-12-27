@@ -81,6 +81,7 @@
 </div>
 <script>
 	$(document).ready(function () {
+		localStorage.removeItem('token');
 		$('#loginForm').submit(function (event) {
 			event.preventDefault(); 
 
